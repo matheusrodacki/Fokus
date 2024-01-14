@@ -8,8 +8,9 @@ const pDescTask = document.querySelector(
 );
 
 const removeCompleteBtn = document.querySelector("#btn-remover-concluidas");
+const removeAllItens = document.querySelector("#btn-remover-todas");
 
-const taskList = JSON.parse(localStorage.getItem("tasks")) || [];
+let taskList = JSON.parse(localStorage.getItem("tasks")) || [];
 let selectedTask = null;
 let liSelectedTask = null;
 
@@ -118,3 +119,17 @@ document.addEventListener("finishedFokus", () => {
     updateTasks();
   }
 });
+
+const removeTasks = (justComplete) => {
+  const selector = justComplete
+    ? ".app__section-task-list-item-complete"
+    : ".app__section-task-list-item";
+  document.querySelectorAll(selector).forEach((element) => {
+    element.remove();
+  });
+  taskList = justComplete ? taskList.filter((task) => !task.complete) : [];
+  updateTasks();
+};
+
+removeCompleteBtn.onclick = () => removeTasks(true);
+removeAllItens.onclick = () => removeTasks(false);
