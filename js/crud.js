@@ -2,8 +2,23 @@ const btnAddTaks = document.querySelector(".app__button--add-task");
 const formAddTaks = document.querySelector(".app__form-add-task");
 const textarea = document.querySelector(".app__form-textarea");
 const ulTasks = document.querySelector(".app__section-task-list");
+const cancelBtn = document.querySelector(".app__form-footer__button--cancel");
+const pDescTask = document.querySelector(
+  ".app__section-active-task-description"
+);
 
 const taskList = JSON.parse(localStorage.getItem("tasks")) || [];
+let selectedTask = null;
+let liSelectedTask = null;
+
+function cleanForm() {
+  textarea.value = "";
+  formAddTaks.classList.add("hidden");
+}
+
+function updateTasks() {
+  localStorage.setItem("tasks", JSON.stringify(taskList));
+}
 
 function addTaks(task) {
   const li = document.createElement("li");
@@ -19,17 +34,45 @@ function addTaks(task) {
   p.classList.add("app__section-task-list-item-description");
   p.textContent = task.description;
 
-  const btn = document.createElement("button");
-  btn.classList.add("app_button-edit");
-  const imgBtn = document.createElement("img");
+  //cria botão edit no item tarefa
+  const editBtn = document.createElement("button");
+  editBtn.classList.add("app_button-edit");
 
-  imgBtn.setAttribute("src", "/img/edit.png");
+  editBtn.onclick = () => {
+    const newDescription = prompt("Qual o novo nome da tarefa?");
+    if (newDescription) {
+      p.textContent = newDescription;
+      task.description = newDescription;
+      updateTasks();
+    }
+  };
 
-  btn.append(imgBtn);
+  //adiciona o icone de lapis no botao edit da tarefa.
+  const imgEditBtn = document.createElement("img");
+  imgEditBtn.setAttribute("src", "/img/edit.png");
+  editBtn.append(imgEditBtn);
 
   li.append(svg);
   li.append(p);
-  li.append(btn);
+  li.append(editBtn);
+  li.onclick = () => {
+    document
+      .querySelectorAll(".app__section-task-list-item-active")
+      .forEach((element) => {
+        element.classList.remove("app__section-task-list-item-active");
+      });
+    if (selectedTask == task) {
+      pDescTask.textContent = "";
+      li.classList.remove("app__section-task-list-item-active");
+      selectedTask = null;
+      liSelectedTask = null;
+      return;
+    }
+    selectedTask = task;
+    liSelectedTask = li;
+    pDescTask.textContent = task.description;
+    li.classList.add("app__section-task-list-item-active");
+  };
 
   return li;
 }
@@ -38,6 +81,8 @@ btnAddTaks.addEventListener("click", () => {
   formAddTaks.classList.toggle("hidden");
 });
 
+cancelBtn.addEventListener("click", cleanForm);
+
 formAddTaks.addEventListener("submit", (evento) => {
   evento.preventDefault();
   const task = {
@@ -45,12 +90,22 @@ formAddTaks.addEventListener("submit", (evento) => {
   };
 
   taskList.push(task);
-  localStorage.setItem("tasks", JSON.stringify(taskList));
+  const taskElement = addTaks(task);
+  ulTasks.append(taskElement);
+  updateTasks();
+  textarea.value = "";
+  formAddTaks.classList.add("hidden");
 });
-
-[{ description: "Curso de TS\n" }];
 
 taskList.forEach((task) => {
   const taskElement = addTaks(task);
   ulTasks.appendChild(taskElement);
+});
+
+document.addEventListener("finishedFokus", () => {
+  if (selectedTask && liSelectedTask) {
+    liSelectedTask.classList.remove("app__section-task-list-item-active");
+    liSelectedTask.classList.add("app__section-task-list-item-complete");
+    liSelectedTask.querySelector("button").setAttribute("disabled", "disabled");
+  }
 });
