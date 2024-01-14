@@ -7,6 +7,8 @@ const pDescTask = document.querySelector(
   ".app__section-active-task-description"
 );
 
+const removeCompleteBtn = document.querySelector("#btn-remover-concluidas");
+
 const taskList = JSON.parse(localStorage.getItem("tasks")) || [];
 let selectedTask = null;
 let liSelectedTask = null;
@@ -55,25 +57,30 @@ function addTaks(task) {
   li.append(svg);
   li.append(p);
   li.append(editBtn);
-  li.onclick = () => {
-    document
-      .querySelectorAll(".app__section-task-list-item-active")
-      .forEach((element) => {
-        element.classList.remove("app__section-task-list-item-active");
-      });
-    if (selectedTask == task) {
-      pDescTask.textContent = "";
-      li.classList.remove("app__section-task-list-item-active");
-      selectedTask = null;
-      liSelectedTask = null;
-      return;
-    }
-    selectedTask = task;
-    liSelectedTask = li;
-    pDescTask.textContent = task.description;
-    li.classList.add("app__section-task-list-item-active");
-  };
 
+  if (task.complete) {
+    li.classList.add("app__section-task-list-item-complete");
+    editBtn.setAttribute("disabled", "disabled");
+  } else {
+    li.onclick = () => {
+      document
+        .querySelectorAll(".app__section-task-list-item-active")
+        .forEach((element) => {
+          element.classList.remove("app__section-task-list-item-active");
+        });
+      if (selectedTask == task) {
+        pDescTask.textContent = "";
+        li.classList.remove("app__section-task-list-item-active");
+        selectedTask = null;
+        liSelectedTask = null;
+        return;
+      }
+      selectedTask = task;
+      liSelectedTask = li;
+      pDescTask.textContent = task.description;
+      li.classList.add("app__section-task-list-item-active");
+    };
+  }
   return li;
 }
 
@@ -107,5 +114,7 @@ document.addEventListener("finishedFokus", () => {
     liSelectedTask.classList.remove("app__section-task-list-item-active");
     liSelectedTask.classList.add("app__section-task-list-item-complete");
     liSelectedTask.querySelector("button").setAttribute("disabled", "disabled");
+    selectedTask.complete = true;
+    updateTasks();
   }
 });
